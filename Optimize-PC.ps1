@@ -3,27 +3,23 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     throw "Please run this script as an Administrator."
 }
 
-# System Optimization
+# Function to Optimize PC while maintaining stability
 function Optimize-PC {
     Write-Host "Optimizing system for gaming..."
 
-    # Disable unnecessary services
-    Stop-Service -Name "WSearch" -Force
-    Set-Service -Name "WSearch" -StartupType Disabled
-    Set-Service -Name "SysMain" -StartupType Disabled
+    # Disable unnecessary visual effects without disrupting stability
+    $performanceOptions = New-Object -ComObject Shell.Application
+    $performanceOptions.ControlPanelItem("System and Security").InvokeVerb("Open")
+    Start-Sleep -Seconds 2
+    $performanceOptions.ControlPanelItem("System").InvokeVerb("Advanced settings")
+    Start-Sleep -Seconds 2
 
-    # Disable Transparency effects
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\DWM" -Name "UseOLEDTaskbarTransparency" -Value 0
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\DWM" -Name "EnableAeroPeek" -Value 0
-
-    # Optimize Visual Effects
-    [System.Windows.Forms.SystemInformation]::UserInteractive | Out-Null
-    $visualEffects = New-Object -ComObject wscript.shell
-    $visualEffects.RegWrite("HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\VisualFX", "0", "REG_DWORD")
+    # Here the user should manually adjust visual effects if desired
+    Write-Host "Please manually adjust the visual effects for best performance and select 'Adjust for best performance' if suitable."
 
     # Clean Temp Files
-    Remove-Item -Path "$env:TEMP\*" -Recurse -Force
-    Write-Host "System optimized."
+    Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "Temporary files cleaned."
 }
 
 # Install Chrome
@@ -32,7 +28,7 @@ function Install-Chrome {
     $chromeInstaller = "https://dl.google.com/chrome/install/latest/chrome_installer.exe"
     Invoke-WebRequest -Uri $chromeInstaller -OutFile "$env:TEMP\chrome_installer.exe"
     Start-Process -FilePath "$env:TEMP\chrome_installer.exe" -ArgumentList "/silent" -Wait
-    Remove-Item -Path "$env:TEMP\chrome_installer.exe"
+    Remove-Item -Path "$env:TEMP\chrome_installer.exe" -ErrorAction SilentlyContinue
     Write-Host "Google Chrome installed."
 }
 
@@ -42,7 +38,7 @@ function Install-Steam {
     $steamInstaller = "https://steamcdn-a.akamaihd.net/client/installer/SteamSetup.exe"
     Invoke-WebRequest -Uri $steamInstaller -OutFile "$env:TEMP\SteamSetup.exe"
     Start-Process -FilePath "$env:TEMP\SteamSetup.exe" -ArgumentList "/silent" -Wait
-    Remove-Item -Path "$env:TEMP\SteamSetup.exe"
+    Remove-Item -Path "$env:TEMP\SteamSetup.exe" -ErrorAction SilentlyContinue
     Write-Host "Steam installed."
 }
 
@@ -50,9 +46,9 @@ function Install-Steam {
 function Update-Windows {
     Write-Host "Checking for Windows updates..."
     # Run Windows Update
-    Install-Module PSWindowsUpdate -Force -Scope CurrentUser -AllowClobber -Confirm:$false
+    Install-Module -Name PSWindowsUpdate -Force -Scope CurrentUser -AllowClobber -Confirm:$false -ErrorAction SilentlyContinue
     Import-Module PSWindowsUpdate
-    Get-WindowsUpdate -Install -AcceptAll -AutoReboot
+    Get-WindowsUpdate -Install -AcceptAll -AutoReboot -ErrorAction SilentlyContinue
 }
 
 # Execute Functions
